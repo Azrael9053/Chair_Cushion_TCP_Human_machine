@@ -1,0 +1,10 @@
+D:\椅墊\Chair_TCP\obj\Debug\Chair_TCP.csproj.AssemblyReference.cache
+D:\椅墊\Chair_TCP\obj\Debug\Chair_TCP.Form1.resources
+D:\椅墊\Chair_TCP\obj\Debug\Chair_TCP.Properties.Resources.resources
+D:\椅墊\Chair_TCP\obj\Debug\Chair_TCP.csproj.GenerateResource.cache
+D:\椅墊\Chair_TCP\obj\Debug\Chair_TCP.csproj.CoreCompileInputs.cache
+D:\椅墊\Chair_TCP\bin\Debug\Chair_TCP.exe.config
+D:\椅墊\Chair_TCP\bin\Debug\Chair_TCP.exe
+D:\椅墊\Chair_TCP\bin\Debug\Chair_TCP.pdb
+D:\椅墊\Chair_TCP\obj\Debug\Chair_TCP.exe
+D:\椅墊\Chair_TCP\obj\Debug\Chair_TCP.pdb
