@@ -24,7 +24,7 @@ namespace Chair_TCP
         private Chair_value processedData; // 存储从 ProcessData 获取的数据
         private int dataIndex = 0, xIndex = 0; // 跟踪当前更新到的数据点索引
         private static System.Threading.Timer myTimer;
-        private const int MaxPoints = 100;  // 设置最大数据点数
+        private const int MaxPoints = 200;  // 设置最大数据点数
         private string extension, filePath;
         private int[] offset = { 0, 0, 0, 0 };
         private byte cnt = 0;
@@ -45,6 +45,7 @@ namespace Chair_TCP
             chart2.ChartAreas[0].AxisY.LabelStyle.Format = "0";
             chart3.ChartAreas[0].AxisY.LabelStyle.Format = "0";
             chart4.ChartAreas[0].AxisY.LabelStyle.Format = "0";
+            comboBox1.SelectedIndex = 0;
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -141,6 +142,7 @@ namespace Chair_TCP
                         label1.Text = "Connected";
                         button2.Enabled = true;
                         button4.Enabled = true;
+                        comboBox1.Enabled = false;
                     });
 
                     break;
@@ -199,8 +201,29 @@ namespace Chair_TCP
                                     // 为文本文件追加文本数据
                                     using (StreamWriter writer = new StreamWriter(filePath, true)) // true 表示追加数据
                                     {
-                                        for (int i = 0; i < TCP_LEN/12; i++)
-                                            writer.WriteLine(processedData.CH1[i].ToString("D8") + "\t" + processedData.CH2[i].ToString("D8") + "\t" + processedData.CH3[i].ToString("D8") + "\t" + processedData.CH4[i].ToString("D8") + "\t" + cnt.ToString()); // WriteLine 会在 textData 后添加换行符
+                                        for (int i = 0; i < TCP_LEN / 12; i++)
+                                        {
+                                            if (comboBox1.Text == "2000Hz")
+                                            {
+                                                writer.WriteLine(processedData.CH1[i].ToString("D8") + "\t" + processedData.CH2[i].ToString("D8") + "\t" + processedData.CH3[i].ToString("D8") + "\t" + processedData.CH4[i].ToString("D8") + "\t" + cnt.ToString()); // WriteLine 会在 textData 后添加换行符
+                                            }
+                                            else if (comboBox1.Text == "1000Hz" && i % 2 == 0)
+                                            {
+                                                writer.WriteLine(processedData.CH1[i].ToString("D8") + "\t" + processedData.CH2[i].ToString("D8") + "\t" + processedData.CH3[i].ToString("D8") + "\t" + processedData.CH4[i].ToString("D8") + "\t" + cnt.ToString()); // WriteLine 会在 textData 后添加换行符
+                                            }
+                                            else if (comboBox1.Text == "500Hz" && i % 4 == 0)
+                                            {
+                                                writer.WriteLine(processedData.CH1[i].ToString("D8") + "\t" + processedData.CH2[i].ToString("D8") + "\t" + processedData.CH3[i].ToString("D8") + "\t" + processedData.CH4[i].ToString("D8") + "\t" + cnt.ToString()); // WriteLine 会在 textData 后添加换行符
+                                            }
+                                            else if (comboBox1.Text == "250Hz" && i % 8 == 0)
+                                            {
+                                                writer.WriteLine(processedData.CH1[i].ToString("D8") + "\t" + processedData.CH2[i].ToString("D8") + "\t" + processedData.CH3[i].ToString("D8") + "\t" + processedData.CH4[i].ToString("D8") + "\t" + cnt.ToString()); // WriteLine 会在 textData 后添加换行符
+                                            }
+                                            else if (comboBox1.Text == "125Hz" && i % 16 == 0)
+                                            {
+                                                writer.WriteLine(processedData.CH1[i].ToString("D8") + "\t" + processedData.CH2[i].ToString("D8") + "\t" + processedData.CH3[i].ToString("D8") + "\t" + processedData.CH4[i].ToString("D8") + "\t" + cnt.ToString()); // WriteLine 会在 textData 后添加换行符
+                                            }
+                                        }
                                     }
 
                                 }
@@ -216,6 +239,7 @@ namespace Chair_TCP
                                             fileStream.Write(BitConverter.GetBytes(processedData.CH2[i]), 0, sizeof(int));
                                             fileStream.Write(BitConverter.GetBytes(processedData.CH3[i]), 0, sizeof(int));
                                             fileStream.Write(BitConverter.GetBytes(processedData.CH4[i]), 0, sizeof(int));
+                                            fileStream.Write(BitConverter.GetBytes(cnt), 0, sizeof(int));
                                         }
                                     }
                                 }
@@ -259,6 +283,7 @@ namespace Chair_TCP
                             button1.Enabled = true;
                             button4.Enabled = false;
                             button2.Enabled = false;
+                            comboBox1.Enabled = true;
                         });
                         if (myListener != null)
                         {
@@ -350,7 +375,7 @@ namespace Chair_TCP
             // 使用 Invoke 确保在 UI 线程上执行更新操作
             this.Invoke((MethodInvoker)delegate
             {
-                
+
                 // 更新图表的每个通道
                 UpdateChart(chart1, xIndex, processedData.CH1[dataIndex]);
                 UpdateChart(chart2, xIndex, processedData.CH2[dataIndex]);
@@ -436,12 +461,13 @@ namespace Chair_TCP
             button1.Enabled = true;
             button4.Enabled = false;
             button2.Enabled = false;
+            comboBox1.Enabled = true;
             return;
         }
 
         private void Timer1_Tick(object sender, EventArgs e)
         {
-            if(!Check)
+            if (!Check)
             {
                 checkBox1.Checked = false;
                 timer1.Stop();
@@ -452,6 +478,11 @@ namespace Chair_TCP
             {
                 Check = false;
             }
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
 
         private void UpdateChart(Chart chart, double xValue, double yValue)
@@ -515,5 +546,42 @@ namespace Chair_TCP
                 extension = Path.GetExtension(filePath).ToLower();
             }
         }
+
+        public class CircularBuffer
+        {
+            private int capacity;
+            private int size = 0;
+            private int head = 0;
+            private int tail = 0;
+            private Chair_value[] buffer;
+
+            public CircularBuffer(int capacity)
+            {
+                this.capacity = capacity;
+                this.buffer = new Chair_value[capacity];
+            }
+
+            public void AddData(Chair_value data)
+            {
+                buffer[tail] = data;
+                tail = (tail + 1) % capacity;
+                if (size < capacity)
+                {
+                    size++;
+                }
+                else
+                {
+                    head = (head + 1) % capacity;
+                }
+            }
+
+            // 可以添加方法来获取缓冲区中的数据，例如获取最新的数据或所有数据
+            public Chair_value GetLatestData()
+            {
+                if (size == 0) return null;
+                return buffer[(tail - 1 + capacity) % capacity];
+            }
+        }
+
     }
 }
